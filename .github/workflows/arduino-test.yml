@@ -1,0 +1,47 @@
+name: Arduino Compilation Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Arduino CLI
+      uses: arduino/setup-arduino-cli@v1
+      
+    - name: Install Arduino MBED OS Nano Boards
+      run: |
+        arduino-cli core install arduino:mbed_nano@2.3.1
+        
+    - name: Install required libraries
+      run: |
+        arduino-cli lib install "Harvard_TinyMLx"
+        arduino-cli lib install "Arduino_LSM9DS1"
+        arduino-cli lib install "ArduinoBLE"
+        
+    - name: Compile main project
+      run: |
+        arduino-cli compile --fqbn arduino:mbed_nano:nano33ble OV7675_Video_Viewer/
+        
+    - name: Compile I2C test project
+      run: |
+        arduino-cli compile --fqbn arduino:mbed_nano:nano33ble I2C_Test_Project/
+        
+    - name: Verify project structure
+      run: |
+        echo "Checking project structure..."
+        ls -la
+        echo "Main project files:"
+        ls -la OV7675_Video_Viewer/
+        echo "I2C test project files:"
+        ls -la I2C_Test_Project/
+        echo "Documentation files:"
+        find . -name "*.md" -type f 
